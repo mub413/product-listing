@@ -6,14 +6,6 @@ import (
 	"net/http"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hallo EveryBody")
-}
-
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "I,m Mohi Uddin")
-}
-
 type Product struct {
 	ID          int     `json:"id"`
 	Title       string  `json:"title"`
@@ -26,20 +18,12 @@ var productList []Product
 
 func getProducts(w http.ResponseWriter, r *http.Request) {
 	handleCors(w)
-	if r.Method != "GET" {
-		http.Error(w, "plz give me GET request", 400)
-		return
-	}
 	sendData(w, productList, 200)
 }
 
 func createProduct(w http.ResponseWriter, r *http.Request) {
 	handleCors(w)
 	preflightReq(w, r)
-	if r.Method != "POST" {
-		http.Error(w, "plz give me POST request", 400)
-		return
-	}
 
 	var newProduct Product
 
@@ -77,14 +61,11 @@ func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
 }
 func main() {
 	mux := http.NewServeMux()
+	mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	mux.HandleFunc("POST /create-products", http.HandlerFunc(createProduct))
+	fmt.Println("Server running on :8080")
 
-	mux.HandleFunc("/hello", helloHandler)
-	mux.HandleFunc("/about", aboutHandler)
-	mux.HandleFunc("/products", getProducts)
-	mux.HandleFunc("/create-products", createProduct)
-	fmt.Println("Server running on :3000")
-
-	err := http.ListenAndServe(":3000", mux)
+	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		fmt.Println("Error starting the server", err)
 	}
